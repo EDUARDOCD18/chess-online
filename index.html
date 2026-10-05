@@ -1,13 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chess-web-winterarc</title>
+    <title>Winter Arc - Ajedrez Web A11y</title>
+    <link rel="stylesheet" href="./src/styles/board.css" />
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <main class="chess-container">
+      <h1 class="chess-container__title">Ajedrez Web — Winter Arc</h1>
+
+      <!-- Tablero de ajedrez dinámico con semántica A11y -->
+      <div
+        id="chess-board"
+        class="chess-board"
+        role="grid"
+        aria-label="Tablero de ajedrez"
+      ></div>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>
