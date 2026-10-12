@@ -5,7 +5,7 @@ export class Pawn extends Piece {
     super(color, "p", color === "w" ? "♙" : "♟");
   }
 
-  getPossiblesMoves(row, color, board) {
+  getPossibleMoves(row, col, board) {
     const moves = [];
     // Dirección del avance: Blancas disminuyen fila (-1), Negras aumentan fila (+1)
     const direction = this.color === "w" ? -1 : 1;
