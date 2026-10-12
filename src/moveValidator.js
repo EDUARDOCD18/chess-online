@@ -113,4 +113,46 @@ export class MoveValidator {
 
     return false;
   }
+
+  /**
+   * Calcula los movimientos válidos de enroque corto y largo para el Rey.
+   */
+  static getCastlingMoves(row, col, board, gameState) {
+    const moves = [];
+    const color = gameState.turn;
+    const rights = gameState.castlingRights[color];
+
+    // Si el Rey está en jaque, no puede enrocar
+    if (gameState.GameState.isInCheck(color, board)) return moves;
+
+    // Enroque Corto (Flanco de Rey)
+    if (rights.kingSide) {
+      if (board[row][col + 1] === null && board[row][col + 2] === null) {
+        if (
+          !gameState.isSquareAttacked(row, col + 1, color, board) &&
+          !gameState.isSquareAttacked(row, col + 2, color, board)
+        ) {
+          moves.push([row, col + 2]);
+        }
+      }
+    }
+
+    // Enroque Largo (Flanco de Dama)
+    if (rights.queenSide) {
+      if (
+        board[row][col - 1] === null &&
+        board[row][col - 2] === null &&
+        board[row][col - 3] === null
+      ) {
+        if (
+          !gameState.isSquareAttacked(row, col - 1, color, board) &&
+          !gameState.isSquareAttacked(row, col - 2, color, board)
+        ) {
+          moves.push([row, col - 2]);
+        }
+      }
+    }
+
+    return moves;
+  }
 }
