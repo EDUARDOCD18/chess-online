@@ -155,4 +155,10 @@ export class MoveValidator {
 
     return moves;
   }
+
+  /**
+   * Evalúa si el peón puede realizar una captura "Al Paso".
+   */
+
+  /* PENDIENTE POR ESCRIBIR el 3.2 (Peón al Paso) */
 }
