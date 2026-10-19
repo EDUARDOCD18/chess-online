@@ -1,3 +1,6 @@
+import { Piece } from "./pieces/Piece";
+import { PieceFactory } from "./pieces/PieceFactory";
+
 // Representación Unicode de cada pieza de ajedrez
 const PIECE_SYMBOLS = {
   r: "♜",
@@ -98,4 +101,18 @@ export class ChessBoard {
     this.loadFEN();
     this.render();
   }
+}
+
+/**
+ * Aplica la promoción de un peón sustituyéndolo por la nueva pieza elegida.
+ * @param {number} row
+ * @param {number} col
+ * @param {'q' | 'r' | 'b' | 'n'} newType - Tipo de pieza elegida ('q' por defecto)
+ * @param {'w' | 'b'} color
+ * @param {Array<Array<Object|null>>} board
+ */
+export function promotePawn(row, col, newType, color, board) {
+  // Convierte el tipo a mayúscula si es blanca o minúscula si es negra para la fábrica
+  const char = color === "w" ? newType.toUpperCase() : newType.toLowerCase();
+  board[row][col] = PieceFactory.createPiece(char);
 }
