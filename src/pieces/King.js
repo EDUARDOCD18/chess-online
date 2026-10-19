@@ -2,7 +2,7 @@ import { Piece } from "./Piece.js";
 
 export class King extends Piece {
   constructor(color) {
-    super(color, "n", color === "w" ? "♘" : "♞");
+    super(color, "n", color === "w" ? "♔" : "♚");
   }
 
   getPossibleMoves(row, col, board) {

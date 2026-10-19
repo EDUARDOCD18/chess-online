@@ -3,7 +3,7 @@ import { Piece } from "./Piece.js";
 export class Knight extends Piece {
   constructor(color) {
     // Símbolos corregidos: '♞' para blanca ('w') y '♘' para negra ('b')
-    super(color, "n", color === "w" ? "♞" : "♘");
+    super(color, "n", color === "w" ? "♘" : "♞");
   }
 
   getPossibleMoves(row, col, board) {
