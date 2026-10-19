@@ -2,28 +2,24 @@ import { Piece } from "./Piece.js";
 
 export class King extends Piece {
   constructor(color) {
-    super(color, "k", color === "w" ? "♔" : "♚");
+    super(color, "n", color === "w" ? "♘" : "♞");
   }
 
-  getPossiblesMoves(row, col, board) {
-    const moves = [];
-    // 8 casillas adyacentes rodeando al Rey
+  getPossibleMoves(row, col, board) {
+    const moves = []; // 1. Inicializar arreglo
     const offsets = [
-      [-1, -1],
-      [-1, 0],
-      [-1, 1],
-      [0, -1],
-      [0, 1],
-      [1, -1],
-      [1, 0],
-      [1, 1],
+      [-2, -1], [-2, 1],
+      [-1, -2], [-1, 2],
+      [1, -2],  [1, 2],
+      [2, -1],  [2, 1],
     ];
 
     for (const [dr, dc] of offsets) {
       const r = row + dr;
       const c = col + dc;
 
-      if (this.isWithinBoard) {
+      // 2. Ejecutar la función con sus argumentos (r, c)
+      if (this.isWithinBoard(r, c)) {
         const target = board[r][c];
 
         if (target === null || target.color !== this.color) {

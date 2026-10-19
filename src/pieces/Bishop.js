@@ -5,7 +5,7 @@ export class Bishop extends Piece {
     super(color, "b", color === "w" ? "♗" : "♝");
   }
 
-  getPossiblesMoves(row, col, board) {
+  getPossibleMoves(row, col, board) {
     const moves = [];
     // Direcciones diagonales: [deltaRow, deltaCol]
     const directions = [

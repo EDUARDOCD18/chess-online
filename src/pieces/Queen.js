@@ -7,14 +7,14 @@ export class Queen extends Piece {
     super(color, "q", color === "w" ? "♕" : "♛");
   }
 
-  getPossiblesMoves(row, col, board) {
+  getPossibleMoves(row, col, board) {
     // La Dama combina las direcciones diagonales (Alfil) y ortogonales (Torre)
-    const bishopMoves = new Bishop(this.color).getPossiblesMoves(
+    const bishopMoves = new Bishop(this.color).getPossibleMoves(
       row,
       col,
       board,
     );
-    const rookMoves = new Rook(this.color).getPossiblesMoves(row, col, board);
+    const rookMoves = new Rook(this.color).getPossibleMoves(row, col, board);
 
     return [...bishopMoves, ...rookMoves];
   }

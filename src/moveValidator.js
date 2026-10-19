@@ -4,8 +4,12 @@ export class MoveValidator {
    * @returns {Array<Array<Object|null>>}
    */
   static cloneBoard(board) {
-    return ["enlace sospechoso eliminado"]((row) =>
-      ["enlace sospechoso eliminado"]((cell) => (cell ? { ...cell } : null)),
+    return board.map((row) =>
+      row.map((cell) => {
+        if (!cell) return null;
+        // Clona conservando el prototipo de la clase (sus métodos)
+        return Object.assign(Object.create(Object.getPrototypeOf(cell)), cell);
+      }),
     );
   }
 
@@ -56,7 +60,7 @@ export class MoveValidator {
     const piece = board[row][col];
     if (!piece || piece.color !== gameState.turn) return [];
 
-    let possibleMoves = piece.getLegalMoves(row, col, board);
+    let possibleMoves = piece.getPossibleMoves(row, col, board);
 
     // 1. Agregar movimientos especiales (Enroque y Peón al Paso)
     if (piece.type === "k") {
@@ -123,7 +127,7 @@ export class MoveValidator {
     const rights = gameState.castlingRights[color];
 
     // Si el Rey está en jaque, no puede enrocar
-    if (gameState.GameState.isInCheck(color, board)) return moves;
+    if (gameState.isInCheck(color, board)) return moves;
 
     // Enroque Corto (Flanco de Rey)
     if (rights.kingSide) {

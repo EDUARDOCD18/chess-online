@@ -2,10 +2,13 @@ import { Piece } from "./Piece.js";
 
 export class Knight extends Piece {
   constructor(color) {
-    super(color, "n", color === "w" ? "♘" : "♞");
+    // Símbolos corregidos: '♞' para blanca ('w') y '♘' para negra ('b')
+    super(color, "n", color === "w" ? "♞" : "♘");
   }
 
-  getPossiblesMoves(row, col, board) {
+  getPossibleMoves(row, col, board) {
+    const moves = []; // 1. Declaración del arreglo de movimientos
+
     // Las 8 posiciones posibles en "L"
     const offsets = [
       [-2, -1],
