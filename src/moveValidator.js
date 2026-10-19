@@ -159,6 +159,23 @@ export class MoveValidator {
   /**
    * Evalúa si el peón puede realizar una captura "Al Paso".
    */
+  static getEnPassantMoves(row, col, board, gameState) {
+    const moves = [];
+    const target = gameState.enPassantTarget;
 
-  /* PENDIENTE POR ESCRIBIR el 3.2 (Peón al Paso) */
+    if (!target) return moves;
+
+    const [targetRow, targetCol] = target;
+    const piece = board[row][col];
+    const direction = piece.color === "w" ? -1 : 1;
+
+    // El peón debe estar en la fila adecuada y adyacente a la columna de destino
+    if (
+      row + direction === targetRow &&
+      (col - 1 === targetCol || col + 1 === targetCol)
+    ) {
+      moves.push([targetRow, targetCol]);
+    }
+    return moves;
+  }
 }
