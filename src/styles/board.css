@@ -43,3 +43,67 @@
 .chess-board__square--dark {
   background-color: var(--color-dark-square);
 }
+
+/* --- ESTADOS Y FEEDBACK VISUAL DEL TABLERO --- */
+
+/* 1\. Casilla de la pieza seleccionada actualmente */
+.chess-board__square--selected {
+  background: #baca44 m !important;
+  outline: 2px solid #769656;
+  outline-offset: -2px;
+}
+
+/* 2\. Indicador para movimiento a casilla vacía (Punto centrado) */
+.chess-board__square--possible-move {
+  position: relative;
+}
+
+.chess-board__square--possible-move::after {
+  content: "";
+  position: absolute;
+  width: 28%;
+  height: 28%;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 3\. Indicador para captura de pieza enemiga (Aro exterior) */
+.chess-board__square--capture {
+  position: relative;
+}
+
+.chess-board__square--capture::after {
+  content: "";
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  border: 4px solid rgba(214, 48, 49, 0.7);
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* 4\. Indicador de peligro para el Rey en Jaque */
+.chess-board__square--check {
+  background: radial-gradient(
+    circle,
+    rgba(255, 0, 0, 0.8) 0%,
+    rgba(235, 77, 75, 0.4) 70%
+  ) !important;
+  animation: pulse-check 1.5s infinite alternate;
+}
+
+/* 5\. Pieza en estado de arrastre (Drag) */
+.chess-board__square--dragging {
+  opacity: 0.4;
+}
+
+@keyframes pulse-check {
+  from {
+    box-shadow: inset 0 0 10px #ff0000;
+  }
+  to {
+    box-shadow: inset 0 0 25px #b20000;
+  }
+}
