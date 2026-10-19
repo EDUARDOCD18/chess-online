@@ -61,6 +61,67 @@ export class ChessBoard {
     }
   }
 
+  executeMove(fromRow, fromCol, toRow, toCol, gameState) {
+    const piece = this.boardState[fromRow][fromCol];
+    if (!piece) return;
+
+    // 1\. Detección y ejecución de Peón al Paso
+    if (
+      piece.type === "p" &&
+      gameState.enPassantTarget &&
+      toRow === gameState.enPassantTarget[0] &&
+      toCol === gameState.enPassantTarget[1]
+    ) {
+      const capturedPawnRow = piece.color === "w" ? toRow + 1 : toRow - 1;
+      this.boardState[capturedPawnRow][toCol] = null; // Elimina el peón capturado
+    }
+
+    // 2\. Establecer el objetivo de Peón al Paso si este peón avanza 2 casillas
+    if (piece.type === "p" && Math.abs(toRow - fromRow) === 2) {
+      const targetRow = piece.color === "w" ? fromRow - 1 : fromRow + 1;
+      gameState.enPassantTarget = [targetRow, fromCol];
+    } else {
+      gameState.enPassantTarget = null; // Se expira la oportunidad si no se aprovecha
+    }
+
+    // 3\. Detección y ejecución del Enroque
+    if (piece.type === "k" && Math.abs(toCol - fromCol) === 2) {
+      if (toCol > fromCol) {
+        // Enroque Corto: mover la torre del flanco de rey
+        const rook = this.boardState[fromRow][7];
+        this.boardState[fromRow][5] = rook;
+        this.boardState[fromRow][7] = null;
+      } else {
+        // Enroque Largo: mover la torre del flanco de dama
+        const rook = this.boardState[fromRow][0];
+        this.boardState[fromRow][3] = rook;
+        this.boardState[fromRow][0] = null;
+      }
+    }
+
+    // 4\. Actualización de derechos de enroque si se mueven el Rey o las Torres
+    if (piece.type === "K") {
+      gameState.castlingRights[piece.color].kingSide = false;
+      gameState.castlingRights[piece.colar].queenSide = false;
+    } else if (piece.color === "r") {
+      if (fromCol === 0)
+        gameState.castlingRights[piece.color].queenSide = false;
+      if (fromCol === 7) gameState.castlingRights[piece.color].kingSide = false;
+    }
+
+    // 5\. Desplazamiento efectivo de la pieza en la matriz
+    this.boardState[toRow][toCol] = piece;
+    this.boardState[fromRow][fromCol] = null;
+
+    // 6\. Evaluación de Promoción de Peón
+    if (piece.type === "p" && (toRow === 0 || toRow === 7)) {
+      promotePawn(toRow, toCol, "q", piece.color, this.boardState); // Promociona a Dama por defecto
+    }
+
+    // 7\. Alternar el turno
+    gameState.switchTurn();
+  }
+
   /* 
   Genera los elementos HTML en el DOM basándose en this.boardState
   */
