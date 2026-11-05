@@ -78,7 +78,8 @@ export class PGNGenerator {
     const algebraic = this.formatMove(moveData);
     this.rawMoves.push(algebraic);
 
-    const isWhite = (moveData.Data.piece.color = "w");
+    // CORRECCIÓN: Usar 'moveData.piece' y comparación '==='
+    const isWhite = moveData.piece.color === "w";
 
     if (isWhite) {
       const moveNumber = Math.floor(this.rawMoves.length / 2) + 1;

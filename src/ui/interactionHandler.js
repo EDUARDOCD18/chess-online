@@ -1,40 +1,67 @@
 import { MoveValidator } from "../moveValidator";
 import { UIRenderer } from "./render";
 import { DragAndDropHandler } from "./dragDrop";
+import { ChessTimer } from "../timer";
+import { PGNGenerator } from "../pgn";
 
 export class InteractionHandler {
-  /**
-   * @param {ChessBoard} chessBoard
-   * @param {GameState} gameState
-   */
   constructor(chessBoard, gameState) {
     this.board = chessBoard;
     this.gameState = gameState;
     this.renderer = new UIRenderer(chessBoard.container);
-    this.selectedSquare = null; // { row, col } de la pieza activa
-    this.currentLegalMoves = []; // Lista de movimientos válidos de la pieza activa
+    this.selectedSquare = null;
+    this.currentLegalMoves = [];
+    this.pgn = new PGNGenerator();
+
+    this.timer = new ChessTimer(
+      5,
+      3,
+      this.updateClockUI.bind(this),
+      this.handleTimeOut.bind(this),
+    );
 
     this.init();
   }
 
   init() {
-    // 1\. Escuchador para interacciones por Clic
     this.board.container.addEventListener("click", this.handleClick.bind(this));
 
-    // 2\. Inicializador de interacciones por Drag &amp; Drop
     this.dragHandler = new DragAndDropHandler(
       this.board.container,
       this.handleMoveAttempt.bind(this),
       this.handleSelectPiece.bind(this),
     );
 
-    // Habilitar atributo draggable en las casillas con piezas
     this.updateDraggablePieces();
   }
 
-  /**
-   * Hace que las casillas con piezas del bando activo sean arrastrables.
-   */
+  updateClockUI(whiteTimerStr, blackTimeStr) {
+    const whiteClock = document.getElementById("white-clock");
+    const blackClock = document.getElementById("black-clock");
+
+    if (whiteClock) whiteClock.textContent = whiteTimerStr;
+    if (blackClock) blackClock.textContent = blackTimeStr;
+
+    const whiteCard = document.getElementById("white-timer-card");
+    const blackCard = document.getElementById("black-timer-card");
+
+    if (whiteCard && blackCard) {
+      whiteCard.classList.toggle(
+        "timer-card--active",
+        this.gameState.turn === "w",
+      );
+      blackCard.classList.toggle(
+        "timer-card--active",
+        this.gameState.turn === "b",
+      );
+    }
+  }
+
+  handleTimeOut(loserColor) {
+    const winner = loserColor === "w" ? "Negras" : "Blancas";
+    alert(`¡Tiempo agotado! Ganan las ${winner}.`);
+  }
+
   updateDraggablePieces() {
     const squares = this.board.container.querySelectorAll(
       ".chess-board__square",
@@ -52,14 +79,9 @@ export class InteractionHandler {
     });
   }
 
-  /**
-   * Intenta seleccionar una pieza.
-   * @returns {boolean} True si la selección fue exitosa
-   */
   handleSelectPiece(row, col) {
     const piece = this.board.boardState[row][col];
 
-    // Solo se permite seleccionar piezas del jugador en turno
     if (!piece || piece.color !== this.gameState.turn) {
       return false;
     }
@@ -72,7 +94,6 @@ export class InteractionHandler {
       this.gameState,
     );
 
-    // Renderizar feedback visual en el DOM
     this.renderer.highlightsLegalMoves(
       row,
       col,
@@ -83,28 +104,53 @@ export class InteractionHandler {
     return true;
   }
 
-  /**
-   * Intenta ejecutar una jugada desde (fromRow, fromCol) hasta (toRow, toCol).
-   */
   handleMoveAttempt(fromRow, fromCol, toRow, toCol) {
     const isLegal = this.currentLegalMoves.some(
       ([r, c]) => r === toRow && c === toCol,
     );
 
     if (isLegal) {
-      // 1\. Ejecutar el movimiento en el modelo de datos
+      if (!this.timer.isRunning) {
+        this.timer.start();
+      }
+
+      const piece = this.board.boardState[fromRow][fromCol];
+      const targetPiece = this.board.boardState[toRow][toCol];
+      const isCapture = targetPiece !== null;
+      const isCastling = piece.type === "k" && Math.abs(toCol - fromCol) === 2;
+      const isPromotion = piece.type === "p" && (toRow === 0 || toRow === 7);
+
       this.board.executeMove(fromRow, fromCol, toRow, toCol, this.gameState);
 
-      // 2\. Redibujar el tablero y limpiar resaltados
-      this.board.render();
-      this.renderer.clearHighlights();
-
-      // 3\. Verificar si el nuevo movimiento deja al Rey contrario en Jaque
-      const inCheck = this.gameState.isInCheck(
+      const isCheck = this.gameState.isInCheck(
         this.gameState.turn,
         this.board.boardState,
       );
-      if (inCheck) {
+      const isCheckmate = MoveValidator.isCheckmate(
+        this.board.boardState,
+        this.gameState,
+      );
+
+      const notation = this.pgn.addMove({
+        piece,
+        from: [fromRow, fromCol],
+        to: [toRow, toCol],
+        isCapture,
+        isCastling,
+        isPromotion,
+        promotedTo: isPromotion ? "q" : null,
+        isCheck,
+        isCheckmate,
+      });
+
+      this.updatePGNUI();
+
+      this.timer.switchTurn(this.gameState.turn);
+
+      this.board.render();
+      this.renderer.clearHighlights();
+
+      if (isCheck) {
         const kingPos = this.gameState.findKing(
           this.gameState.turn,
           this.board.boardState,
@@ -114,19 +160,40 @@ export class InteractionHandler {
         this.renderer.updateCheckWarning(null);
       }
 
-      // 4\. Actualizar estado de arrastre para el nuevo turno
+      if (isCheckmate) {
+        this.timer.stop();
+        alert(
+          `¡Jaque Mate! Victoria para las ${this.gameState.turn === "w" ? "Negras" : "Blancas"}.`,
+        );
+      }
+
       this.updateDraggablePieces();
       this.resetSelection();
     } else {
-      // Si la jugada no es legal, cancela la selección
       this.resetSelection();
       this.renderer.clearHighlights();
     }
   }
 
-  /**
-   * Procesa los eventos de Clic del ratón.
-   */
+  updatePGNUI() {
+    const pgnContainer = document.getElementById("pgn-list");
+    if (!pgnContainer) return;
+
+    pgnContainer.innerHTML = "";
+    this.pgn.history.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "pgn-row";
+      row.innerHTML = `
+      <span class="pgn-row__num">${item.number}.</span>
+      <span>${item.white}</span> 
+      <span>${item.black}</span>
+      `;
+      pgnContainer.appendChild(row);
+    });
+
+    pgnContainer.scrollTop = pgnContainer.scrollHeight;
+  }
+
   handleClick(e) {
     const square = e.target.closest(".chess-board__square");
     if (!square) return;
@@ -135,16 +202,12 @@ export class InteractionHandler {
     const col = parseInt(square.dataset.col, 10);
 
     if (this.selectedSquare === null) {
-      // PRIMER CLIC: Intentar seleccionar pieza
       this.handleSelectPiece(row, col);
     } else {
-      // SEGUNDO CLIC:
-      // Si hace clic en otra pieza del mismo equipo, cambia la selección
       const clickedPiece = this.board.boardState[row][col];
       if (clickedPiece && clickedPiece.color === this.gameState.turn) {
         this.handleSelectPiece(row, col);
       } else {
-        // Intentar mover a la casilla destino
         this.handleMoveAttempt(
           this.selectedSquare.row,
           this.selectedSquare.col,
