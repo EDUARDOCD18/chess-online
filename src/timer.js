@@ -17,7 +17,7 @@ export class ChessTimer {
     this.blackTime = this.initialSeconds;
     this.activePlayer = "w";
     this.intervalId = null;
-    this.isRunnig = false;
+    this.isRunning = false;
     this.onTick = onTick;
     this.onTimeOut = onTimeOut;
   }
@@ -25,8 +25,8 @@ export class ChessTimer {
    * Inicia o reanuda la cuenta regresiva del jugador activo.
    */
   start() {
-    if (this.isRunnig) return;
-    this.isRunnig = true;
+    if (this.isRunning) return;
+    this.isRunning = true;
 
     this.intervalId = setInterval(() => {
       if (this.activePlayer === "w") {
@@ -63,7 +63,7 @@ export class ChessTimer {
       this.intervalId = null;
     }
 
-    this.isRunnig = false;
+    this.isRunning = false;
   }
 
   /**
@@ -73,7 +73,7 @@ export class ChessTimer {
 
   switchTurn(nextTurn) {
     // Aplica el incremento de tiempo al jugador que acaba de mover
-    if (this.isRunnig && this.increment > 0) {
+    if (this.isRunning && this.increment > 0) {
       if (this.activePlayer === "w") {
         this.whiteTime += this.increment;
       } else {

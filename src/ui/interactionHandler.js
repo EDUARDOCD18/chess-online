@@ -12,6 +12,7 @@ export class InteractionHandler {
     this.selectedSquare = null;
     this.currentLegalMoves = [];
     this.pgn = new PGNGenerator();
+    this.isGameOver = false;
 
     this.timer = new ChessTimer(
       5,
@@ -25,6 +26,10 @@ export class InteractionHandler {
 
   init() {
     this.board.container.addEventListener("click", this.handleClick.bind(this));
+    this.updateClockUI(
+      this.timer.formatTime(this.timer.whiteTime),
+      this.timer.formatTime(this.timer.blackTime),
+    );
 
     this.dragHandler = new DragAndDropHandler(
       this.board.container,
@@ -58,6 +63,8 @@ export class InteractionHandler {
   }
 
   handleTimeOut(loserColor) {
+    this.isGameOver = true;
+    this.updateDraggablePieces();
     const winner = loserColor === "w" ? "Negras" : "Blancas";
     alert(`¡Tiempo agotado! Ganan las ${winner}.`);
   }
@@ -71,7 +78,7 @@ export class InteractionHandler {
       const c = parseInt(sq.dataset.col, 10);
       const piece = this.board.boardState[r][c];
 
-      if (piece && piece.color === this.gameState.turn) {
+      if (!this.isGameOver && piece && piece.color === this.gameState.turn) {
         sq.setAttribute("draggable", "true");
       } else {
         sq.removeAttribute("draggable");
@@ -80,6 +87,8 @@ export class InteractionHandler {
   }
 
   handleSelectPiece(row, col) {
+    if (this.isGameOver) return false;
+
     const piece = this.board.boardState[row][col];
 
     if (!piece || piece.color !== this.gameState.turn) {
@@ -105,6 +114,8 @@ export class InteractionHandler {
   }
 
   handleMoveAttempt(fromRow, fromCol, toRow, toCol) {
+    if (this.isGameOver) return;
+
     const isLegal = this.currentLegalMoves.some(
       ([r, c]) => r === toRow && c === toCol,
     );
@@ -116,11 +127,17 @@ export class InteractionHandler {
 
       const piece = this.board.boardState[fromRow][fromCol];
       const targetPiece = this.board.boardState[toRow][toCol];
-      const isCapture = targetPiece !== null;
+      const isEnPassantCapture =
+        piece.type === "p" &&
+        this.gameState.enPassantTarget &&
+        toRow === this.gameState.enPassantTarget[0] &&
+        toCol === this.gameState.enPassantTarget[1];
+      const isCapture = targetPiece !== null || isEnPassantCapture;
       const isCastling = piece.type === "k" && Math.abs(toCol - fromCol) === 2;
       const isPromotion = piece.type === "p" && (toRow === 0 || toRow === 7);
 
       this.board.executeMove(fromRow, fromCol, toRow, toCol, this.gameState);
+      this.gameState.switchTurn();
 
       const isCheck = this.gameState.isInCheck(
         this.gameState.turn,
@@ -161,10 +178,15 @@ export class InteractionHandler {
       }
 
       if (isCheckmate) {
+        this.isGameOver = true;
         this.timer.stop();
         alert(
           `¡Jaque Mate! Victoria para las ${this.gameState.turn === "w" ? "Negras" : "Blancas"}.`,
         );
+      } else if (MoveValidator.isStalemate(this.board.boardState, this.gameState)) {
+        this.isGameOver = true;
+        this.timer.stop();
+        alert("¡Tablas por ahogado!");
       }
 
       this.updateDraggablePieces();

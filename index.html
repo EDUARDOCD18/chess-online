@@ -3,20 +3,93 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Winter Arc - Ajedrez Web A11y</title>
+    <meta
+      name="description"
+      content="Una partida de ajedrez local con tablero interactivo e historial de movimientos."
+    />
+    <meta name="theme-color" content="#111a17" />
+    <title>Ajedrez — Winter Arc</title>
     <link rel="stylesheet" href="./src/styles/board.css" />
+    <link rel="stylesheet" href="./src/styles/panel.css" />
   </head>
   <body>
     <main class="chess-container">
-      <h1 class="chess-container__title">Ajedrez Web — Winter Arc</h1>
+      <header class="page-header">
+        <a class="brand" href="./" aria-label="Winter Arc, inicio">
+          <span class="brand__mark" aria-hidden="true">♞</span>
+          <span class="brand__name">WINTER <span>ARC</span></span>
+        </a>
+        <div class="page-header__label">
+          <span class="status-dot" aria-hidden="true"></span>
+          PARTIDA LOCAL
+        </div>
+      </header>
 
-      <!-- Tablero de ajedrez dinámico con semántica A11y -->
-      <div
-        id="chess-board"
-        class="chess-board"
-        role="grid"
-        aria-label="Tablero de ajedrez"
-      ></div>
+      <section class="game-layout" aria-labelledby="game-title">
+        <div class="game">
+          <div class="game__heading">
+            <div>
+              <p class="eyebrow">MODO CLÁSICO · 5 MIN + 3 S</p>
+              <h1 id="game-title">Tu partida</h1>
+            </div>
+            <span class="game__badge">♟ &nbsp; 1 vs 1</span>
+          </div>
+
+          <section class="player-card player-card--black" id="black-timer-card" aria-label="Reloj de las negras">
+            <span class="player-card__avatar player-card__avatar--black" aria-hidden="true">N</span>
+            <span class="player-card__info">
+              <span class="player-card__name">Negras</span>
+              <span class="player-card__caption">Juegan con negras</span>
+            </span>
+            <span class="player-card__clock" id="black-clock">05:00</span>
+          </section>
+
+          <div
+            id="chess-board"
+            class="chess-board"
+            role="grid"
+            aria-label="Tablero de ajedrez"
+          ></div>
+
+          <section class="player-card player-card--white timer-card--active" id="white-timer-card" aria-label="Reloj de las blancas">
+            <span class="player-card__avatar player-card__avatar--white" aria-hidden="true">B</span>
+            <span class="player-card__info">
+              <span class="player-card__name">Blancas</span>
+              <span class="player-card__caption">Juegan con blancas</span>
+            </span>
+            <span class="player-card__clock" id="white-clock">05:00</span>
+          </section>
+          <p class="game__hint">Selecciona una pieza para ver sus movimientos legales.</p>
+        </div>
+
+        <aside class="chess-dashboard" aria-label="Información de la partida">
+          <section class="pgn-panel" aria-labelledby="moves-title">
+            <div class="pgn-panel__header">
+              <div>
+                <p class="eyebrow">LA PARTIDA</p>
+                <h2 id="moves-title">Movimientos</h2>
+              </div>
+              <span class="pgn-panel__icon" aria-hidden="true">↗</span>
+            </div>
+            <div class="pgn-panel__columns" aria-hidden="true">
+              <span>#</span><span>BLANCAS</span><span>NEGRAS</span>
+            </div>
+            <div class="pgn-panel__list" id="pgn-list" aria-live="polite">
+              <p class="pgn-panel__empty">Las jugadas aparecerán aquí.</p>
+            </div>
+          </section>
+
+          <div class="dashboard-note">
+            <span class="dashboard-note__icon" aria-hidden="true">✦</span>
+            <p><strong>Un movimiento a la vez.</strong><br />Piensa tu estrategia y disfruta la partida.</p>
+          </div>
+
+          <footer class="dashboard-footer">
+            <span>HECHO PARA JUGAR</span>
+            <span class="dashboard-footer__mark" aria-hidden="true">W·A</span>
+          </footer>
+        </aside>
+      </section>
     </main>
 
     <script type="module" src="./src/main.js"></script>

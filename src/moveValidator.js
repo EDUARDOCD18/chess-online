@@ -61,6 +61,11 @@ export class MoveValidator {
     if (!piece || piece.color !== gameState.turn) return [];
 
     let possibleMoves = piece.getPossibleMoves(row, col, board);
+    possibleMoves = possibleMoves.filter(
+      ([toRow, toCol]) =>
+        board[toRow][toCol]?.type !== "k" ||
+        board[toRow][toCol]?.color === piece.color,
+    );
 
     // 1. Agregar movimientos especiales (Enroque y Peón al Paso)
     if (piece.type === "k") {
@@ -125,12 +130,20 @@ export class MoveValidator {
     const moves = [];
     const color = gameState.turn;
     const rights = gameState.castlingRights[color];
+    const homeRow = color === "w" ? 7 : 0;
+
+    if (row !== homeRow || col !== 4) return moves;
 
     // Si el Rey está en jaque, no puede enrocar
     if (gameState.isInCheck(color, board)) return moves;
 
     // Enroque Corto (Flanco de Rey)
-    if (rights.kingSide) {
+    const kingSideRook = board[homeRow][7];
+    if (
+      rights.kingSide &&
+      kingSideRook?.type === "r" &&
+      kingSideRook.color === color
+    ) {
       if (board[row][col + 1] === null && board[row][col + 2] === null) {
         if (
           !gameState.isSquareAttacked(row, col + 1, color, board) &&
@@ -142,7 +155,12 @@ export class MoveValidator {
     }
 
     // Enroque Largo (Flanco de Dama)
-    if (rights.queenSide) {
+    const queenSideRook = board[homeRow][0];
+    if (
+      rights.queenSide &&
+      queenSideRook?.type === "r" &&
+      queenSideRook.color === color
+    ) {
       if (
         board[row][col - 1] === null &&
         board[row][col - 2] === null &&

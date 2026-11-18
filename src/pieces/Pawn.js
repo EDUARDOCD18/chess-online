@@ -22,7 +22,11 @@ export class Pawn extends Piece {
 
     // 2. Avance doble inicial (solo si el paso de 1 casilla también está libre)
     const doubleForwardRow = row + direction * 2;
-    if (row === startRow && board[doubleForwardRow][col] === null) {
+    if (
+      row === startRow &&
+      board[forwardRow][col] === null &&
+      board[doubleForwardRow][col] === null
+    ) {
       moves.push([doubleForwardRow, col]);
     }
 

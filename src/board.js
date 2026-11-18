@@ -35,14 +35,15 @@ export class ChessBoard {
   executeMove(fromRow, fromCol, toRow, toCol, gameState) {
     const piece = this.boardState[fromRow][fromCol];
     if (!piece) return;
-
-    // 1. Detección y ejecución de Peón al Paso
-    if (
+    const targetPiece = this.boardState[toRow][toCol];
+    const isEnPassantCapture =
       piece.type === "p" &&
       gameState.enPassantTarget &&
       toRow === gameState.enPassantTarget[0] &&
-      toCol === gameState.enPassantTarget[1]
-    ) {
+      toCol === gameState.enPassantTarget[1];
+
+    // 1. Detección y ejecución de Peón al Paso
+    if (isEnPassantCapture) {
       const capturedPawnRow = piece.color === "w" ? toRow + 1 : toRow - 1;
       this.boardState[capturedPawnRow][toCol] = null;
     }
@@ -71,13 +72,26 @@ export class ChessBoard {
     }
 
     // 4. Actualización de derechos de enroque
-    if (piece.type === "k") {
+    const homeRow = piece.color === "w" ? 7 : 0;
+    if (piece.type === "k" && fromRow === homeRow && fromCol === 4) {
       gameState.castlingRights[piece.color].kingSide = false;
       gameState.castlingRights[piece.color].queenSide = false;
-    } else if (piece.type === "r") {
-      if (fromCol === 0)
+    } else if (piece.type === "r" && fromRow === homeRow) {
+      if (fromCol === 0) {
         gameState.castlingRights[piece.color].queenSide = false;
-      if (fromCol === 7) gameState.castlingRights[piece.color].kingSide = false;
+      }
+      if (fromCol === 7) {
+        gameState.castlingRights[piece.color].kingSide = false;
+      }
+    }
+
+    if (targetPiece && targetPiece.type === "r") {
+      const capturedHomeRow = targetPiece.color === "w" ? 7 : 0;
+      if (toRow === capturedHomeRow && toCol === 0) {
+        gameState.castlingRights[targetPiece.color].queenSide = false;
+      } else if (toRow === capturedHomeRow && toCol === 7) {
+        gameState.castlingRights[targetPiece.color].kingSide = false;
+      }
     }
 
     // 5. Desplazamiento en la matriz
@@ -108,6 +122,11 @@ export class ChessBoard {
         const piece = this.boardState[row][col];
         if (piece) {
           square.textContent = piece.symbol;
+          square.classList.add(
+            piece.color === "w"
+              ? "chess-board__square--white-piece"
+              : "chess-board__square--black-piece",
+          );
           square.setAttribute(
             "aria-label",
             `${piece.color === "w" ? "Blanca" : "Negra"} ${piece.type}`,

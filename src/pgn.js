@@ -26,7 +26,7 @@ export class PGNGenerator {
       from,
       to,
       isCapture,
-      isCastlin,
+      isCastling,
       isPromotion,
       isCheck,
       isCheckmate,
@@ -34,21 +34,23 @@ export class PGNGenerator {
     } = moveData;
 
     // 1\. Manejo del Enroque
-    if (isCastlin) {
+    if (isCastling) {
       return to[1] > from[1] ? "O-O" : "O-O-O";
     }
 
     let notation = "";
     const destSquare = PGNGenerator.coordsToAlgebraic(to[0], to[1]);
-    const pieceTypeUpper = piece.type.toUpperCase();
+    const pieceTypeUpper = { k: "K", q: "Q", r: "R", b: "B", n: "N" }[
+      piece.type
+    ];
 
     // 2. Prefijo de Pieza
     // Si el peón captura, lleva la letra de la columna de origen (ej: "exd5")
-    if (isCapture) {
+    if (piece.type === "p" && isCapture) {
       const fromFile = String.fromCharCode(97 + from[1]);
       notation += `${fromFile}x`;
     } else {
-      notation += pieceTypeUpper;
+      if (piece.type !== "p") notation += pieceTypeUpper;
       if (isCapture) notation += "x";
     }
 
@@ -64,7 +66,7 @@ export class PGNGenerator {
     if (isCheckmate) {
       notation += "#";
     } else if (isCheck) {
-      notation += "0";
+      notation += "+";
     }
 
     return notation;
